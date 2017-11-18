@@ -1,24 +1,19 @@
-CC=gcc
-CFLAGS=-c -O2 -Wall -g
+CC=g++
+CFLAGS=-c -O2
 
-all: hw4
+all: ThreadIdler
 
-hw4: binary_semaphore.o hw4.o
-	$(CC) binary_semaphore.o hw4.o -o hw4 -lpthread 
+ThreadIdler: binary_semaphore.o ThreadIdler.o
+	$(CC) binary_semaphore.o ThreadIdler.o -o ThreadIdler -lpthread 
 
-binary_semaphore.o: binary_semaphore.c
-	$(CC) $(CFLAGS) binary_semaphore.c
+binary_semaphore.o: binary_semaphore.cpp
+	$(CC) $(CFLAGS) binary_semaphore.cpp
 
-hw4.o: hw4.c
-	$(CC) $(CFLAGS) hw4.c
+ThreadIdler.o: ThreadIdler.cpp
+	$(CC) $(CFLAGS) ThreadIdler.cpp
 
 clean:
-	/bin/rm -f hw4 *.o *.gz
+	/bin/rm -f ThreadIdler *.o *.gz
 
 run:
-	./hw4 8 4 10 
-
-tarball:
-	# put your tar command here
-	# tar -cvzf <lastname>.tar.gz *
-
+	./ThreadIdler
