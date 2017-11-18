@@ -19,6 +19,8 @@ included in all copies or substantial portions of the Software.
 #include <time.h>    // for nanosleep()
 #include <errno.h>   // for EINTR error check in millisleep()
 
+#include <graphics.h> // addes graphics
+
 #include "binary_semaphore.h"
 
 // you can adjust next two values to speedup/slowdown the simulation
@@ -221,6 +223,7 @@ void* guard(void* arg)
   srand(seeds[0]);
 
   for (i = 0; i < num_checks; i++) {
+    circle(50, 50, 30);
     guard_check_room();
     guard_walk_hallway();
   }
@@ -243,6 +246,12 @@ void* student(void* arg)
 
 int main(int argc, char** argv)
 {
+  //start up the graphics window.
+  int gd = DETECT, gm;
+  initgraph(&gd, &gm, NULL);
+ 
+
+
   int n;                   // number of student threads
   pthread_t  cthread;      // guard thread
   pthread_t* sthreads;     // student threads
@@ -298,6 +307,9 @@ int main(int argc, char** argv)
 
   free(seeds);
   free(sthreads);
-  
+
+  //delay(500000);
+  getch();
+  closegraph();
   return 0;
 }

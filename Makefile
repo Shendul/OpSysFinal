@@ -4,7 +4,7 @@ CFLAGS=-c -O2 -Wall -g
 all: hw4
 
 hw4: binary_semaphore.o hw4.o
-	$(CC) binary_semaphore.o hw4.o -o hw4 -lpthread 
+	$(CC) binary_semaphore.o hw4.o -o hw4 -lpthread -lgraph
 
 binary_semaphore.o: binary_semaphore.c
 	$(CC) $(CFLAGS) binary_semaphore.c
