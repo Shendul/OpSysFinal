@@ -80,6 +80,7 @@ inline void farmer_working(long id)
 
 void* farmer(void* arg)
 {
+  printf("farmer running"); // for testing.
   long id = (long) arg;
   char* status; // TODO use this to show if they are working ect.
 
@@ -103,6 +104,7 @@ int main(int argc, char** argv)
   int numFarmers = 0; // TODO make this better?
   while(running) {
     int cmd;
+    printf("---------------------------------------\n");
     printf("Please Enter one of the commands below:\n");
     millisleep(STANDARD_DELAY); // added delays for human readability
     printf("(1) Get A report on current Money amount.\n");
@@ -116,21 +118,41 @@ int main(int argc, char** argv)
     cin >> cmd;
     millisleep(STANDARD_DELAY); // added delays for human readability
     if (cmd == 1){
+      printf("---------------------------------------\n");
       printf("Current Money: %d\n", money);
       millisleep(STANDARD_DELAY); // added delays for human readability
     } else if (cmd == 2) {
       bool inHireMenu = true;
       while(inHireMenu){
         int hcmd;
+        printf("---------------------------------------\n");
         printf("Please Enter one of the commands below:\n");
         millisleep(STANDARD_DELAY); // added delays for human readability
         printf("(1) Hire a Farmer. Cost: %d\n", farmerPrice);
         millisleep(STANDARD_DELAY); // added delays for human readability
+        printf("(10) Exit Hire/Upgrade Menu.\n");
+        millisleep(STANDARD_DELAY);
+        printf("@ThreadIdler/HireMenu: ");
         cin >> hcmd;
 
         if(hcmd == 1){
-          numFarmers++;
-          pthread_create(&fthread, NULL, farmer, (void*) numFarmers);
+
+          if(money >= farmerPrice){
+            millisleep(STANDARD_DELAY);
+            printf("---------------------------------------\n");
+            millisleep(STANDARD_DELAY);
+            // TODO make sure that money is semaphore guarded.
+            printf("Farmer has been hired! money left: %d\n", money);
+            millisleep(STANDARD_DELAY);
+            numFarmers++;
+            pthread_create(&fthread, NULL, farmer, (void*) 1);
+          } else {
+            millisleep(STANDARD_DELAY);
+            printf("---------------------------------------\n");
+            millisleep(STANDARD_DELAY);
+            // TODO make sure that money is semaphore guarded.
+            printf("Failed to hire farmer! need %d more money!\n", farmerPrice - money);
+          }
         } else if (hcmd == 10){
           inHireMenu = false;
         } else {
@@ -140,6 +162,9 @@ int main(int argc, char** argv)
       }
     } else if (cmd == 10) {
       running = false;
+      printf("---------------------------------------\n");
+      printf("        THANK YOU FOR PLAYING!!        \n");
+      printf("---------------------------------------\n");
     } else {
       printf("Invalid Command Entered\n");
       millisleep(STANDARD_DELAY); // added delays for human readability
