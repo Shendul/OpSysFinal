@@ -14,7 +14,7 @@ libslang2-dev libasound2 libasound2-dev
 
 Next you must download libgraph from http://download.savannah.gnu.org/releases/libgraph/libgraph-1.0.2.tar.gz and do the following commands:
 
-./configure
-make
-sudo make install
-sudo cp /usr/local/lib/libgraph.* /usr/lib
+./configure  
+make  
+sudo make install  
+sudo cp /usr/local/lib/libgraph.* /usr/lib  
