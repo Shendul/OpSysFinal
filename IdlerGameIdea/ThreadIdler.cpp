@@ -22,18 +22,14 @@ included in all copies or substantial portions of the Software.
 using namespace std;
 #include "binary_semaphore.h"
 
-#define MIN_SLEEP      20   // minimum sleep time in milliseconds
-#define MAX_SLEEP     100   // maximum sleep time in milliseconds
-#define STANDARD_DELAY  200  // minimum sleep time in milliseconds
 
-#define START_SEED     17   // arbitrary value to seed random number generator
+#define STANDARD_DELAY  200  // delay for human readability
+
+#define WORK_DELAY     20   // arbitrary value to seed random number generator
 
 binary_semaphore stash;  // to protect money variable
 
 int money; // the main point of the game.
-
-// will malloc space for seeds[] in the main
-unsigned int *seeds;     // rand seed for generating delays
 
 inline void millisleep(long millisecs) 
 { // delay for "millisecs" milliseconds
@@ -44,24 +40,15 @@ inline void millisleep(long millisecs)
   while(nanosleep(&req, &req) == -1 && errno == EINTR);
 }
 
-// generate random int in range [min, max]
-inline int rand_range(unsigned int *seedptr, long min, long max)
-{ // using reentrante version of rand() function (because multithreaded)
-  // NOTE: however, overall behavior of code will still be non-deterministic
-  return min + rand_r(seedptr) % (max - min + 1);
-}
-
 inline void work(long id)  
 { // unit works for some random time
-  int ms = rand_range(&seeds[id], MIN_SLEEP, MAX_SLEEP/2);
-  printf("unit %2ld working for %3d millisecs\n",
-   id, ms); // for testing purposes only, remove when finished
+  int ms = STANDARD_DELAY;
   millisleep(ms);
 }
 
 inline void do_something_else(long id)   
 { // a unit does something else
-  int ms = rand_range(&seeds[id], MIN_SLEEP, MAX_SLEEP);
+  int ms = STANDARD_DELAY;
   millisleep(ms);
 }
 
@@ -72,7 +59,15 @@ inline void farmer_working(long id)
   // that multiple threads can change the money without race condition.
   int work_for_min = 60;
   while(work_for_min > 0){
+
+    semWaitB(&stash);
     money++;
+    semSignalB(&stash);
+
+    work(id);
+    //printf("unit %ld working. Current money: %d \n",
+   //id, money); // for testing purposes only, remove when finished
+    //printf("%d\n",work_for_min);
     work_for_min--;
   }
 
@@ -80,11 +75,9 @@ inline void farmer_working(long id)
 
 void* farmer(void* arg)
 {
-  printf("farmer running"); // for testing.
   long id = (long) arg;
-  char* status; // TODO use this to show if they are working ect.
+  //char* status; // TODO use this to show if they are working ect.
 
-  srand(seeds[id]);
   while (1) {
     farmer_working(id);
     do_something_else(id);
@@ -95,13 +88,22 @@ void* farmer(void* arg)
 
 int main(int argc, char** argv)
 {
+  //TODO maybe add in the ability to read in from a text file save.
+
+
   //TODO make this dynamic or an array so we can have more farmers.
   pthread_t  fthread;      // farmer thread
 
+  // init the semaphores
+  semInitB(&stash, 1);
+
+
   bool running = true; // 1 is true, 0 is false.
-  int money = 0;
+  money = 0;
   int farmerPrice = 0; //TODO make this global
   int numFarmers = 0; // TODO make this better?
+
+
   while(running) {
     int cmd;
     printf("---------------------------------------\n");
