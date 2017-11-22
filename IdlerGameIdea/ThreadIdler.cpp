@@ -216,6 +216,9 @@ int main(int argc, char** argv)
     millisleep(STANDARD_DELAY); // added delays for human readability
     printf(LINE_START "(2) Hire/Upgrade Menu." LINE_END);
     millisleep(STANDARD_DELAY); 
+    // TODO add a command three that shows the status of all units owned.
+
+    // TODO maybe add a reset command?
     printf(LINE_START "(9) Save Menu." LINE_END);
     millisleep(STANDARD_DELAY);
     printf(LINE_START "(10) Exit the game." LINE_END);
@@ -244,6 +247,7 @@ int main(int argc, char** argv)
           printf(LINE_START "(1) Hire a Farmer. Cost:" ANSI_COLOR_YELLOW " %d" ANSI_COLOR_RESET LINE_END, farmerPrice);
           millisleep(STANDARD_DELAY); // added delays for human readability
         }
+        // TODO add an upgrade for the farmers that will make them all make money faster or something.
         printf(LINE_START "(10) Exit Hire/Upgrade Menu." LINE_END);
         millisleep(STANDARD_DELAY);
         printf(ANSI_COLOR_CYAN LINE_START "@ThreadIdler/HireMenu: " ANSI_COLOR_RESET);
