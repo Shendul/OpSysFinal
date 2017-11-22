@@ -27,6 +27,19 @@ using namespace std;
 #define MAX_FARMERS 10 // max number of farmers that can be hired
 #define WORK_DELAY     20   // arbitrary value to seed random number generator
 
+//Define color coded text.
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m" // this is white
+
+//Define Formatting
+#define LINE_START "\t\t\t\t"
+#define LINE_END  "\n\n"
+
 binary_semaphore stash;  // to protect money variable
 
 int money; // the main point of the game.
@@ -121,8 +134,8 @@ inline void load (int fileToLoad){
     farmerPrice += 200; // make sure this matches what happens in hire menu.
   }
   money = loadedMoney;
-  printf("---------------------------------------\n");
-  printf("loaded file: %s\n",fileName);
+  printf("--------------------------------------------------------------------------------\n");
+  printf(LINE_START "loaded file: %s\n",fileName);
 
   fclose(fp);
 
@@ -155,8 +168,8 @@ inline void save (int fileToLoad){
   fprintf(fp, "%d\n", savedMoney);
   // next digit is num of farmers
   fprintf(fp, "%d\n", savedFarmers);
-  printf("---------------------------------------\n");
-  printf("Saved to file: %s\n",fileName);
+  printf("--------------------------------------------------------------------------------\n");
+  printf(LINE_START "Saved to file: %s\n",fileName);
   fclose(fp);
 
 }
@@ -164,10 +177,10 @@ inline void save (int fileToLoad){
 int main(int argc, char** argv)
 {
 
-
-  printf("---------------------------------------\n");
-  printf("      WELCOME TO THREAD IDLER!!        \n");
-
+  printf("\n\n\n\n\n\n\n\n\n\n");
+  printf( LINE_START "--------------------------------------------------------------------------------\n");
+  printf( LINE_START "                             WELCOME TO THREAD IDLER!                           \n");
+  printf( LINE_START "         Please set your terminal to full screen for the best experience.       \n");
   // init the semaphores
   semInitB(&stash, 1);
 
@@ -195,44 +208,44 @@ int main(int argc, char** argv)
 
   while(running) {
     int cmd;
-    printf("---------------------------------------\n");
-    printf("Please Enter one of the commands below:\n");
+    printf(LINE_START "--------------------------------------------------------------------------------" LINE_END);
+    printf(LINE_START "Please Enter one of the commands below:" LINE_END);
     millisleep(STANDARD_DELAY); // added delays for human readability
-    printf("(1) Get A report on current Money amount.\n");
+    printf(LINE_START "(1) Get A report on current Money amount." LINE_END);
     millisleep(STANDARD_DELAY); // added delays for human readability
-    printf("(2) Hire/Upgrade Menu.\n");
+    printf(LINE_START "(2) Hire/Upgrade Menu." LINE_END);
     millisleep(STANDARD_DELAY); 
-    printf("(9) Save Menu.\n");
+    printf(LINE_START "(9) Save Menu." LINE_END);
     millisleep(STANDARD_DELAY);
-    printf("(10) Exit the game.\n");
+    printf(LINE_START "(10) Exit the game." LINE_END);
     millisleep(STANDARD_DELAY); // added delays for human readability
 
-    printf("@ThreadIdler: ");
+    printf(ANSI_COLOR_GREEN LINE_START "@ThreadIdler: " ANSI_COLOR_RESET);
     cin >> cmd;
     millisleep(STANDARD_DELAY); // added delays for human readability
     if (cmd == 1){
-      printf("---------------------------------------\n");
+      printf(LINE_START "--------------------------------------------------------------------------------\n");
       semWaitB(&stash);
-      printf("Current Money: %d\n", money);
+      printf(ANSI_COLOR_YELLOW LINE_START  LINE_START "Current Money: %d\n" ANSI_COLOR_RESET, money);
       semSignalB(&stash);
       millisleep(STANDARD_DELAY); // added delays for human readability
     } else if (cmd == 2) {
       bool inHireMenu = true;
       while(inHireMenu){
         int hcmd;
-        printf("---------------------------------------\n");
-        printf("Please Enter one of the commands below:\n");
+        printf(LINE_START "--------------------------------------------------------------------------------\n");
+        printf(LINE_START "Please Enter one of the commands below:" LINE_END);
         millisleep(STANDARD_DELAY); // added delays for human readability
         if(numFarmers >= MAX_FARMERS){
-          printf("Max amount of Farmers reached!\n");
+          printf(LINE_START "Max amount of Farmers reached!" LINE_END);
           millisleep(STANDARD_DELAY); // added delays for human readability
         } else {
-          printf("(1) Hire a Farmer. Cost: %d\n", farmerPrice);
+          printf(LINE_START "(1) Hire a Farmer. Cost:" ANSI_COLOR_YELLOW " %d" ANSI_COLOR_RESET LINE_END, farmerPrice);
           millisleep(STANDARD_DELAY); // added delays for human readability
         }
-        printf("(10) Exit Hire/Upgrade Menu.\n");
+        printf(LINE_START "(10) Exit Hire/Upgrade Menu." LINE_END);
         millisleep(STANDARD_DELAY);
-        printf("@ThreadIdler/HireMenu: ");
+        printf(ANSI_COLOR_CYAN LINE_START "@ThreadIdler/HireMenu: " ANSI_COLOR_RESET);
         cin >> hcmd;
 
         if(hcmd == 1){
@@ -243,7 +256,7 @@ int main(int argc, char** argv)
 
 
             millisleep(STANDARD_DELAY);
-            printf("---------------------------------------\n");
+            printf(LINE_START "--------------------------------------------------------------------------------\n");
             millisleep(STANDARD_DELAY);
 
             semWaitB(&stash);
@@ -256,24 +269,24 @@ int main(int argc, char** argv)
 
             // TODO make sure that money is semaphore guarded.
             semWaitB(&stash);
-            printf("Farmer has been hired! money left: %d\n", money);
+            printf(LINE_START "Farmer has been hired! money left:" ANSI_COLOR_YELLOW " %d\n" ANSI_COLOR_RESET, money);
             semSignalB(&stash);
             millisleep(STANDARD_DELAY);
           } else {
             millisleep(STANDARD_DELAY);
-            printf("---------------------------------------\n");
+            printf(LINE_START "--------------------------------------------------------------------------------\n");
             millisleep(STANDARD_DELAY);
             // TODO make sure that money is semaphore guarded.
             if (numFarmers >= MAX_FARMERS){
-              printf("You have already reached the maximum amount of Farmers!\n");
+              printf(LINE_START "You have already reached the maximum amount of Farmers!\n");
             } else {
-              printf("Failed to hire farmer! need %d more money!\n", farmerPrice - moneySnapshot);
+              printf(LINE_START "Failed to hire farmer! need" ANSI_COLOR_YELLOW" %d" ANSI_COLOR_RESET " more money!\n", farmerPrice - moneySnapshot);
             }
           }
         } else if (hcmd == 10){
           inHireMenu = false;
         } else {
-          printf("Invalid Command Entered\n");
+          printf(LINE_START "Invalid Command Entered\n");
           millisleep(STANDARD_DELAY); // added delays for human readability
         }
       }
@@ -281,18 +294,18 @@ int main(int argc, char** argv)
       bool inSaveMenu = true;
       while(inSaveMenu){
         int scmd;
-        printf("---------------------------------------\n");
-        printf("Please Enter one of the commands below:\n");
+        printf(LINE_START "--------------------------------------------------------------------------------\n");
+        printf(LINE_START "Please Enter one of the commands below:" LINE_END);
         millisleep(STANDARD_DELAY); // added delays for human readability
-        printf("(1) Save to file 1.\n");
+        printf(LINE_START "(1) Save to file 1." LINE_END);
         millisleep(STANDARD_DELAY); // added delays for human readability
-        printf("(2) Save to file 2.\n");
+        printf(LINE_START "(2) Save to file 2." LINE_END);
         millisleep(STANDARD_DELAY);
-        printf("(3) Save to file 3.\n");
+        printf(LINE_START "(3) Save to file 3." LINE_END);
         millisleep(STANDARD_DELAY);
-        printf("(10) Exit Save Menu.\n");
+        printf(LINE_START "(10) Exit Save Menu." LINE_END);
         millisleep(STANDARD_DELAY);
-        printf("@ThreadIdler/SaveMenu: ");
+        printf(ANSI_COLOR_MAGENTA LINE_START "@ThreadIdler/SaveMenu: " ANSI_COLOR_RESET);
         cin >> scmd;
 
         if (scmd == 1){
@@ -304,18 +317,18 @@ int main(int argc, char** argv)
         } else if (scmd == 10){
           inSaveMenu = false;
         } else {
-          printf("Invalid Command Entered\n");
+          printf(LINE_START "Invalid Command Entered\n");
           millisleep(STANDARD_DELAY);
         }
       }
 
     } else if (cmd == 10) {
       running = false;
-      printf("---------------------------------------\n");
-      printf("        THANK YOU FOR PLAYING!!        \n");
-      printf("---------------------------------------\n");
+      printf(LINE_START "--------------------------------------------------------------------------------\n");
+      printf(LINE_START "                            THANK YOU FOR PLAYING!!                             \n");
+      printf(LINE_START "--------------------------------------------------------------------------------\n");
     } else {
-      printf("Invalid Command Entered\n");
+      printf(LINE_START "Invalid Command Entered\n");
       millisleep(STANDARD_DELAY); // added delays for human readability
     }
 
