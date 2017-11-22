@@ -86,10 +86,32 @@ void* farmer(void* arg)
   return NULL;   // thread needs to return a void*
 }
 
+inline void load (int fileToLoad){
+  FILE *fp;
+  char *fileName;
+
+  if(fileToLoad == 1){
+    fileName = "save1.txt";
+  } else if (fileToLoad == 2){
+    fileName = "save2.txt";
+  }
+
+  fp = fopen(fileName, "r");
+
+  if (fp == NULL) {
+  fprintf(stderr, "Can't open input file %s\n", fileName);
+  exit(1);
+}
+
+  int loadedMoney;
+  fscanf(fp, "%d", &loadedMoney);
+  printf("loaded file: %s\n",fileName);
+  money = loadedMoney;
+
+}
+
 int main(int argc, char** argv)
 {
-  //TODO maybe add in the ability to read in from a text file save.
-
 
   //TODO make this dynamic or an array so we can have more farmers.
   pthread_t  fthread;      // farmer thread
@@ -102,6 +124,17 @@ int main(int argc, char** argv)
   money = 0;
   int farmerPrice = 0; //TODO make this global
   int numFarmers = 0; // TODO make this better?
+
+  int fileToLoad; // which slot to load from?
+  //TODO maybe add in the ability to read in from a text file save.
+  char *endptr1; // for strtol()
+  fileToLoad = strtol(argv[1], &endptr1, 10);
+
+  if (fileToLoad == 1){
+    load(1);
+  } else if (fileToLoad == 2){
+    load(2);
+  }
 
 
   while(running) {
