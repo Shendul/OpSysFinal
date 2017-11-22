@@ -39,6 +39,7 @@ using namespace std;
 //Define Formatting
 #define LINE_START "\t\t\t\t"
 #define LINE_END  "\n\n"
+#define DIVIDER "--------------------------------------------------------------------------------------\n"
 
 binary_semaphore stash;  // to protect money variable
 
@@ -134,8 +135,8 @@ inline void load (int fileToLoad){
     farmerPrice += 200; // make sure this matches what happens in hire menu.
   }
   money = loadedMoney;
-  printf("--------------------------------------------------------------------------------\n");
-  printf(LINE_START "loaded file: %s\n",fileName);
+  printf(LINE_START DIVIDER);
+  printf(LINE_START LINE_START ANSI_COLOR_MAGENTA "loaded file: %s\n" ANSI_COLOR_RESET,fileName);
 
   fclose(fp);
 
@@ -168,8 +169,8 @@ inline void save (int fileToLoad){
   fprintf(fp, "%d\n", savedMoney);
   // next digit is num of farmers
   fprintf(fp, "%d\n", savedFarmers);
-  printf("--------------------------------------------------------------------------------\n");
-  printf(LINE_START "Saved to file: %s\n",fileName);
+  printf(LINE_START DIVIDER);
+  printf(LINE_START LINE_START ANSI_COLOR_MAGENTA "Saved to file: %s\n" ANSI_COLOR_RESET,fileName);
   fclose(fp);
 
 }
@@ -178,9 +179,9 @@ int main(int argc, char** argv)
 {
 
   printf("\n\n\n\n\n\n\n\n\n\n");
-  printf( LINE_START "--------------------------------------------------------------------------------\n");
-  printf( LINE_START "                             WELCOME TO THREAD IDLER!                           \n");
-  printf( LINE_START "         Please set your terminal to full screen for the best experience.       \n");
+  printf( LINE_START DIVIDER);
+  printf( LINE_START LINE_START"WELCOME TO THREAD IDLER!\n");
+  printf( LINE_START "\t\tPlease set your terminal to full screen for the best experience.\n");
   // init the semaphores
   semInitB(&stash, 1);
 
@@ -208,7 +209,7 @@ int main(int argc, char** argv)
 
   while(running) {
     int cmd;
-    printf(LINE_START "--------------------------------------------------------------------------------" LINE_END);
+    printf(LINE_START DIVIDER LINE_END);
     printf(LINE_START "Please Enter one of the commands below:" LINE_END);
     millisleep(STANDARD_DELAY); // added delays for human readability
     printf(LINE_START "(1) Get A report on current Money amount." LINE_END);
@@ -224,7 +225,7 @@ int main(int argc, char** argv)
     cin >> cmd;
     millisleep(STANDARD_DELAY); // added delays for human readability
     if (cmd == 1){
-      printf(LINE_START "--------------------------------------------------------------------------------\n");
+      printf(LINE_START DIVIDER);
       semWaitB(&stash);
       printf(ANSI_COLOR_YELLOW LINE_START  LINE_START "Current Money: %d\n" ANSI_COLOR_RESET, money);
       semSignalB(&stash);
@@ -233,7 +234,7 @@ int main(int argc, char** argv)
       bool inHireMenu = true;
       while(inHireMenu){
         int hcmd;
-        printf(LINE_START "--------------------------------------------------------------------------------\n");
+        printf(LINE_START DIVIDER);
         printf(LINE_START "Please Enter one of the commands below:" LINE_END);
         millisleep(STANDARD_DELAY); // added delays for human readability
         if(numFarmers >= MAX_FARMERS){
@@ -256,7 +257,7 @@ int main(int argc, char** argv)
 
 
             millisleep(STANDARD_DELAY);
-            printf(LINE_START "--------------------------------------------------------------------------------\n");
+            printf(LINE_START DIVIDER);
             millisleep(STANDARD_DELAY);
 
             semWaitB(&stash);
@@ -274,7 +275,7 @@ int main(int argc, char** argv)
             millisleep(STANDARD_DELAY);
           } else {
             millisleep(STANDARD_DELAY);
-            printf(LINE_START "--------------------------------------------------------------------------------\n");
+            printf(LINE_START DIVIDER);
             millisleep(STANDARD_DELAY);
             // TODO make sure that money is semaphore guarded.
             if (numFarmers >= MAX_FARMERS){
@@ -294,7 +295,7 @@ int main(int argc, char** argv)
       bool inSaveMenu = true;
       while(inSaveMenu){
         int scmd;
-        printf(LINE_START "--------------------------------------------------------------------------------\n");
+        printf(LINE_START DIVIDER);
         printf(LINE_START "Please Enter one of the commands below:" LINE_END);
         millisleep(STANDARD_DELAY); // added delays for human readability
         printf(LINE_START "(1) Save to file 1." LINE_END);
@@ -324,9 +325,9 @@ int main(int argc, char** argv)
 
     } else if (cmd == 10) {
       running = false;
-      printf(LINE_START "--------------------------------------------------------------------------------\n");
-      printf(LINE_START "                            THANK YOU FOR PLAYING!!                             \n");
-      printf(LINE_START "--------------------------------------------------------------------------------\n");
+      printf(LINE_START DIVIDER);
+      printf(LINE_START "THANK YOU FOR PLAYING!!\n");
+      printf(LINE_START DIVIDER);
     } else {
       printf(LINE_START "Invalid Command Entered\n");
       millisleep(STANDARD_DELAY); // added delays for human readability
