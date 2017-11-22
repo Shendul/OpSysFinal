@@ -24,16 +24,17 @@ using namespace std;
 
 
 #define STANDARD_DELAY  200  // delay for human readability
-
+#define MAX_FARMERS 10 // max number of farmers that can be hired
 #define WORK_DELAY     20   // arbitrary value to seed random number generator
 
 binary_semaphore stash;  // to protect money variable
 
 int money; // the main point of the game.
 int numFarmers; // total number of farmers owned.
+int farmerPrice; // cost to hire new farmer.
 
 //TODO make this dynamic or an array so we can have more farmers.
-pthread_t  fthread;      // farmer thread
+pthread_t*  fthreads;      // farmer thread
 
 inline void millisleep(long millisecs) 
 { // delay for "millisecs" milliseconds
@@ -114,9 +115,10 @@ inline void load (int fileToLoad){
   fscanf(fp, "%d", &loadedMoney);
   fscanf(fp, "%d", &loadedFarmers);
   for (int f = 0; f < loadedFarmers; f++){
-    printf("this is a test, farmer loaded\n");
+    //printf("this is a test, farmer loaded\n");
     numFarmers++;
-    pthread_create(&fthread, NULL, farmer, (void*) f);
+    pthread_create(&fthreads[f], NULL, farmer, (void*) f);
+    farmerPrice += 200; // make sure this matches what happens in hire menu.
   }
   money = loadedMoney;
   printf("---------------------------------------\n");
@@ -169,10 +171,12 @@ int main(int argc, char** argv)
   // init the semaphores
   semInitB(&stash, 1);
 
+  fthreads = (pthread_t*) malloc(MAX_FARMERS*sizeof(pthread_t));
+
 
   bool running = true; // 1 is true, 0 is false.
   money = 0;
-  int farmerPrice = 0; //TODO make this global
+  farmerPrice = 0;
   numFarmers = 0;
 
   int fileToLoad; // which slot to load from?
@@ -208,7 +212,9 @@ int main(int argc, char** argv)
     millisleep(STANDARD_DELAY); // added delays for human readability
     if (cmd == 1){
       printf("---------------------------------------\n");
+      semWaitB(&stash);
       printf("Current Money: %d\n", money);
+      semSignalB(&stash);
       millisleep(STANDARD_DELAY); // added delays for human readability
     } else if (cmd == 2) {
       bool inHireMenu = true;
@@ -217,30 +223,52 @@ int main(int argc, char** argv)
         printf("---------------------------------------\n");
         printf("Please Enter one of the commands below:\n");
         millisleep(STANDARD_DELAY); // added delays for human readability
-        printf("(1) Hire a Farmer. Cost: %d\n", farmerPrice);
-        millisleep(STANDARD_DELAY); // added delays for human readability
+        if(numFarmers >= MAX_FARMERS){
+          printf("Max amount of Farmers reached!\n");
+          millisleep(STANDARD_DELAY); // added delays for human readability
+        } else {
+          printf("(1) Hire a Farmer. Cost: %d\n", farmerPrice);
+          millisleep(STANDARD_DELAY); // added delays for human readability
+        }
         printf("(10) Exit Hire/Upgrade Menu.\n");
         millisleep(STANDARD_DELAY);
         printf("@ThreadIdler/HireMenu: ");
         cin >> hcmd;
 
         if(hcmd == 1){
+          semWaitB(&stash);
+          int moneySnapshot = money;
+          semSignalB(&stash);
+          if(moneySnapshot >= farmerPrice && numFarmers < MAX_FARMERS){
 
-          if(money >= farmerPrice){
+
             millisleep(STANDARD_DELAY);
             printf("---------------------------------------\n");
             millisleep(STANDARD_DELAY);
-            // TODO make sure that money is semaphore guarded.
-            printf("Farmer has been hired! money left: %d\n", money);
-            millisleep(STANDARD_DELAY);
+
+            semWaitB(&stash);
+            money -= farmerPrice;
+            semSignalB(&stash);
+
             numFarmers++;
-            pthread_create(&fthread, NULL, farmer, (void*) 1);
+            pthread_create(&fthreads[numFarmers - 1], NULL, farmer, (void*) (numFarmers - 1));
+            farmerPrice += 200;
+
+            // TODO make sure that money is semaphore guarded.
+            semWaitB(&stash);
+            printf("Farmer has been hired! money left: %d\n", money);
+            semSignalB(&stash);
+            millisleep(STANDARD_DELAY);
           } else {
             millisleep(STANDARD_DELAY);
             printf("---------------------------------------\n");
             millisleep(STANDARD_DELAY);
             // TODO make sure that money is semaphore guarded.
-            printf("Failed to hire farmer! need %d more money!\n", farmerPrice - money);
+            if (numFarmers >= MAX_FARMERS){
+              printf("You have already reached the maximum amount of Farmers!\n");
+            } else {
+              printf("Failed to hire farmer! need %d more money!\n", farmerPrice - moneySnapshot);
+            }
           }
         } else if (hcmd == 10){
           inHireMenu = false;
