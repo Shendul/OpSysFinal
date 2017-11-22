@@ -30,6 +30,10 @@ using namespace std;
 binary_semaphore stash;  // to protect money variable
 
 int money; // the main point of the game.
+int numFarmers; // total number of farmers owned.
+
+//TODO make this dynamic or an array so we can have more farmers.
+pthread_t  fthread;      // farmer thread
 
 inline void millisleep(long millisecs) 
 { // delay for "millisecs" milliseconds
@@ -94,6 +98,8 @@ inline void load (int fileToLoad){
     fileName = "save1.txt";
   } else if (fileToLoad == 2){
     fileName = "save2.txt";
+  } else if (fileToLoad == 3){
+    fileName = "save3.txt";
   }
 
   fp = fopen(fileName, "r");
@@ -104,10 +110,17 @@ inline void load (int fileToLoad){
 }
 
   int loadedMoney;
+  int loadedFarmers;
   fscanf(fp, "%d", &loadedMoney);
+  fscanf(fp, "%d", &loadedFarmers);
+  for (int f = 0; f < loadedFarmers; f++){
+    printf("this is a test, farmer loaded\n");
+    numFarmers++;
+    pthread_create(&fthread, NULL, farmer, (void*) f);
+  }
+  money = loadedMoney;
   printf("---------------------------------------\n");
   printf("loaded file: %s\n",fileName);
-  money = loadedMoney;
 
   fclose(fp);
 
@@ -121,6 +134,8 @@ inline void save (int fileToLoad){
     fileName = "save1.txt";
   } else if (fileToLoad == 2){
     fileName = "save2.txt";
+  } else if (fileToLoad == 3){
+    fileName = "save3.txt";
   }
 
   fp = fopen(fileName, "w");
@@ -129,10 +144,15 @@ inline void save (int fileToLoad){
   fprintf(stderr, "Can't open input file %s\n", fileName);
   exit(1);
 }
-
+  semWaitB(&stash);
   int savedMoney = money;// get money
+  semSignalB(&stash);
+
+  int savedFarmers = numFarmers;// get money
   // money is first digit in file.
   fprintf(fp, "%d\n", savedMoney);
+  // next digit is num of farmers
+  fprintf(fp, "%d\n", savedFarmers);
   printf("---------------------------------------\n");
   printf("Saved to file: %s\n",fileName);
   fclose(fp);
@@ -145,10 +165,6 @@ int main(int argc, char** argv)
 
   printf("---------------------------------------\n");
   printf("      WELCOME TO THREAD IDLER!!        \n");
-  //printf("---------------------------------------\n");
-
-  //TODO make this dynamic or an array so we can have more farmers.
-  pthread_t  fthread;      // farmer thread
 
   // init the semaphores
   semInitB(&stash, 1);
@@ -157,7 +173,7 @@ int main(int argc, char** argv)
   bool running = true; // 1 is true, 0 is false.
   money = 0;
   int farmerPrice = 0; //TODO make this global
-  int numFarmers = 0; // TODO make this better?
+  numFarmers = 0;
 
   int fileToLoad; // which slot to load from?
   //TODO maybe add in the ability to read in from a text file save.
@@ -168,6 +184,8 @@ int main(int argc, char** argv)
     load(1);
   } else if (fileToLoad == 2){
     load(2);
+  } else if (fileToLoad == 3){
+    load(3);
   }
 
 
@@ -242,6 +260,8 @@ int main(int argc, char** argv)
         millisleep(STANDARD_DELAY); // added delays for human readability
         printf("(2) Save to file 2.\n");
         millisleep(STANDARD_DELAY);
+        printf("(3) Save to file 3.\n");
+        millisleep(STANDARD_DELAY);
         printf("(10) Exit Save Menu.\n");
         millisleep(STANDARD_DELAY);
         printf("@ThreadIdler/SaveMenu: ");
@@ -251,6 +271,8 @@ int main(int argc, char** argv)
           save(1);
         } else if (scmd == 2){
           save(2);
+        } else if (scmd == 3){
+          save(3);
         } else if (scmd == 10){
           inSaveMenu = false;
         } else {
