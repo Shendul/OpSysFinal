@@ -105,13 +105,47 @@ inline void load (int fileToLoad){
 
   int loadedMoney;
   fscanf(fp, "%d", &loadedMoney);
+  printf("---------------------------------------\n");
   printf("loaded file: %s\n",fileName);
   money = loadedMoney;
+
+  fclose(fp);
+
+}
+
+inline void save (int fileToLoad){
+  FILE *fp;
+  char *fileName;
+
+  if(fileToLoad == 1){
+    fileName = "save1.txt";
+  } else if (fileToLoad == 2){
+    fileName = "save2.txt";
+  }
+
+  fp = fopen(fileName, "w");
+
+  if (fp == NULL) {
+  fprintf(stderr, "Can't open input file %s\n", fileName);
+  exit(1);
+}
+
+  int savedMoney = money;// get money
+  // money is first digit in file.
+  fprintf(fp, "%d\n", savedMoney);
+  printf("---------------------------------------\n");
+  printf("Saved to file: %s\n",fileName);
+  fclose(fp);
 
 }
 
 int main(int argc, char** argv)
 {
+
+
+  printf("---------------------------------------\n");
+  printf("      WELCOME TO THREAD IDLER!!        \n");
+  //printf("---------------------------------------\n");
 
   //TODO make this dynamic or an array so we can have more farmers.
   pthread_t  fthread;      // farmer thread
@@ -145,7 +179,9 @@ int main(int argc, char** argv)
     printf("(1) Get A report on current Money amount.\n");
     millisleep(STANDARD_DELAY); // added delays for human readability
     printf("(2) Hire/Upgrade Menu.\n");
-    millisleep(STANDARD_DELAY); // added delays for human readability
+    millisleep(STANDARD_DELAY); 
+    printf("(9) Save Menu.\n");
+    millisleep(STANDARD_DELAY);
     printf("(10) Exit the game.\n");
     millisleep(STANDARD_DELAY); // added delays for human readability
 
@@ -195,6 +231,34 @@ int main(int argc, char** argv)
           millisleep(STANDARD_DELAY); // added delays for human readability
         }
       }
+    } else if (cmd == 9) {
+      bool inSaveMenu = true;
+      while(inSaveMenu){
+        int scmd;
+        printf("---------------------------------------\n");
+        printf("Please Enter one of the commands below:\n");
+        millisleep(STANDARD_DELAY); // added delays for human readability
+        printf("(1) Save to file 1.\n");
+        millisleep(STANDARD_DELAY); // added delays for human readability
+        printf("(2) Save to file 2.\n");
+        millisleep(STANDARD_DELAY);
+        printf("(10) Exit Save Menu.\n");
+        millisleep(STANDARD_DELAY);
+        printf("@ThreadIdler/SaveMenu: ");
+        cin >> scmd;
+
+        if (scmd == 1){
+          save(1);
+        } else if (scmd == 2){
+          save(2);
+        } else if (scmd == 10){
+          inSaveMenu = false;
+        } else {
+          printf("Invalid Command Entered\n");
+          millisleep(STANDARD_DELAY);
+        }
+      }
+
     } else if (cmd == 10) {
       running = false;
       printf("---------------------------------------\n");
