@@ -217,7 +217,7 @@ int main(int argc, char** argv)
     printf(LINE_START "(2) Hire/Upgrade Menu." LINE_END);
     millisleep(STANDARD_DELAY); 
     // TODO add a command three that shows the status of all units owned.
-
+    // TODO add a How To Play section Command
     // TODO maybe add a reset command?
     printf(LINE_START "(9) Save Menu." LINE_END);
     millisleep(STANDARD_DELAY);
