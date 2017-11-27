@@ -16,4 +16,4 @@ clean:
 	/bin/rm -f ThreadIdler *.o *.gz
 
 run:
-	./ThreadIdler
+	./ThreadIdler 0
