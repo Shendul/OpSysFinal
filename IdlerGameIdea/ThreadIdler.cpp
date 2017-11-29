@@ -217,8 +217,14 @@ int main(int argc, char** argv)
     printf(LINE_START "(2) Hire/Upgrade Menu." LINE_END);
     millisleep(STANDARD_DELAY); 
     // TODO add a command three that shows the status of all units owned.
+    //printf(LINE_START "(3) Status Of Farmers." LINE_END);
+    //millisleep(STANDARD_DELAY); 
     // TODO add a How To Play section Command
+    printf(LINE_START "(4) How To Play." LINE_END);
+    millisleep(STANDARD_DELAY); // added delays for human readability
     // TODO maybe add a reset command?
+    printf(LINE_START "(5) Reset." LINE_END);
+    millisleep(STANDARD_DELAY); // added delays for human readability
     printf(LINE_START "(9) Save Menu." LINE_END);
     millisleep(STANDARD_DELAY);
     printf(LINE_START "(10) Exit the game." LINE_END);
@@ -295,7 +301,45 @@ int main(int argc, char** argv)
           millisleep(STANDARD_DELAY); // added delays for human readability
         }
       }
-    } else if (cmd == 9) {
+    } 
+
+//*-------------------------	DIRECTIONS MENU---------------------------------*//
+     else if (cmd == 4) {
+	bool inDirectionsMenu = true;
+	int dcmd = 1;
+	printf(LINE_START DIVIDER);
+	printf(LINE_START LINE_START ANSI_COLOR_YELLOW "\t DIRECTIONS" ANSI_COLOR_RESET "\n");
+	printf(LINE_START DIVIDER "\n");
+	printf(LINE_START "* The objective of the game is to continuously build wealth through hiring farmers." LINE_END);
+	printf(LINE_START "* Your wealth continues to grow as long as you have hired a farmer." LINE_END);
+	printf(LINE_START "* Farmers becoming increasingly more expensive as you hire." LINE_END); 
+	printf(LINE_START "* The more farmers you have hired, the more rapidly your wealth will accumulate." LINE_END);
+
+	printf(LINE_START DIVIDER);
+	printf(LINE_START "Please Enter (10) To Exit The Directions Menu:" LINE_END);
+	printf(LINE_START "(10) Exit Directions Menu." LINE_END);
+        millisleep(STANDARD_DELAY);
+        printf(ANSI_COLOR_CYAN LINE_START "@ThreadIdler/Directions: " ANSI_COLOR_RESET);
+	while(inDirectionsMenu){
+        cin >> dcmd;
+	if (dcmd == 10)
+		inDirectionsMenu = false;
+	  }
+	}
+//*---------------------------- END OF DIRECTIONS MENU --------------------------------*//
+
+//*------------------------------ RESET -----------------------------------------------*//
+     else if (cmd == 5) {
+	semWaitB(&stash);
+	money = 0;
+	//Look into how to iterate through thread IDs
+	//pthread_kill(&fthreads[?, 0];
+	semSignalB(&stash);
+
+	}
+
+//*----------------------------------- END OF RESET -------------------------------------*//
+     else if (cmd == 9) {
       bool inSaveMenu = true;
       while(inSaveMenu){
         int scmd;
