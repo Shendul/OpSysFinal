@@ -47,6 +47,8 @@ binary_semaphore stash, ffarm;  // to protect money variable
 int money; // the main point of the game.
 int numFarmers; // total number of farmers owned.
 int farmerPrice; // cost to hire new farmer.
+int farmerUpgradePrice;
+int upgradeLevel;
 
 pthread_t*  fthreads;      // farmer thread
 static int fstatus[MAX_FARMERS];
@@ -69,7 +71,7 @@ inline void work(long id)
 inline void do_something_else(long id)   
 { // a unit does something else
   //int ms = STANDARD_DELAY;
-  int ms = 100000;
+  int ms = 1000;
   millisleep(ms);
 }
 
@@ -84,7 +86,7 @@ inline void farmer_working(long id)
   semSignalB(&ffarm);
   while(work_for_min > 0){
     semWaitB(&stash);
-    money++;
+    money += upgradeLevel;
     semSignalB(&stash);
 
     work(id);
@@ -203,7 +205,9 @@ int main(int argc, char** argv)
   bool running = true; // 1 is true, 0 is false.
   money = 0;
   farmerPrice = 0;
+  farmerUpgradePrice = 500;
   numFarmers = 0;
+  upgradeLevel = 1;
 
   int fileToLoad; // which slot to load from?
   //TODO maybe add in the ability to read in from a text file save.
@@ -264,6 +268,8 @@ int main(int argc, char** argv)
         } else {
           printf(LINE_START "(1) Hire a Farmer. Cost:" ANSI_COLOR_YELLOW " %d" ANSI_COLOR_RESET LINE_END, farmerPrice);
           millisleep(STANDARD_DELAY); // added delays for human readability
+	  printf(LINE_START "(2) Upgrade Farmers. Cost:" ANSI_COLOR_YELLOW " %d" ANSI_COLOR_RESET LINE_END, farmerUpgradePrice);
+          millisleep(STANDARD_DELAY);
         }
         // TODO add an upgrade for the farmers that will make them all make money faster or something.
         printf(LINE_START "(10) Exit Hire/Upgrade Menu." LINE_END);
@@ -290,11 +296,13 @@ int main(int argc, char** argv)
             pthread_create(&fthreads[numFarmers - 1], NULL, farmer, (void*) (numFarmers - 1));
             farmerPrice += 200;
 
-            // TODO make sure that money is semaphore guarded.
             semWaitB(&stash);
             printf(LINE_START "Farmer has been hired! money left:" ANSI_COLOR_YELLOW " %d\n" ANSI_COLOR_RESET, money);
             semSignalB(&stash);
             millisleep(STANDARD_DELAY);
+
+	   
+
           } else {
             millisleep(STANDARD_DELAY);
             printf(LINE_START DIVIDER);
@@ -306,7 +314,43 @@ int main(int argc, char** argv)
               printf(LINE_START "Failed to hire farmer! need" ANSI_COLOR_YELLOW" %d" ANSI_COLOR_RESET " more money!\n", farmerPrice - moneySnapshot);
             }
           }
-        } else if (hcmd == 10){
+        }
+
+
+	else if(hcmd == 2){
+		semWaitB(&stash);
+          	int moneySnapshot = money;
+          	semSignalB(&stash);
+
+		if(moneySnapshot >= farmerUpgradePrice){
+			millisleep(STANDARD_DELAY);
+            		printf(LINE_START DIVIDER);
+            		millisleep(STANDARD_DELAY);
+
+            		semWaitB(&stash);
+            		money -= farmerUpgradePrice;
+            		semSignalB(&stash);
+
+			upgradeLevel++;
+			farmerUpgradePrice += 500;
+
+			semWaitB(&stash);
+            		printf(LINE_START "Farmers have been upgraded! money left:" ANSI_COLOR_YELLOW " %d\n" ANSI_COLOR_RESET, money);
+            		semSignalB(&stash);
+            		millisleep(STANDARD_DELAY);
+		}
+
+	else {
+            millisleep(STANDARD_DELAY);
+            printf(LINE_START DIVIDER);
+            millisleep(STANDARD_DELAY);
+            // TODO make sure that money is semaphore guarded.
+              printf(LINE_START "Failed to upgrade farmers! need" ANSI_COLOR_YELLOW" %d" ANSI_COLOR_RESET " more money!\n", farmerUpgradePrice - moneySnapshot);
+        }
+
+	} 
+
+	 else if (hcmd == 10){
           inHireMenu = false;
         } else {
           printf(LINE_START "Invalid Command Entered\n");
