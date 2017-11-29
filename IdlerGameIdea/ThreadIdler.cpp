@@ -19,6 +19,7 @@ included in all copies or substantial portions of the Software.
 #include <time.h>    // for nanosleep()
 #include <errno.h>   // for EINTR error check in millisleep()
 #include <iostream>
+#include <signal.h>
 using namespace std;
 #include "binary_semaphore.h"
 
@@ -41,14 +42,14 @@ using namespace std;
 #define LINE_END  "\n\n"
 #define DIVIDER "--------------------------------------------------------------------------------------\n"
 
-binary_semaphore stash;  // to protect money variable
+binary_semaphore stash, ffarm;  // to protect money variable
 
 int money; // the main point of the game.
 int numFarmers; // total number of farmers owned.
 int farmerPrice; // cost to hire new farmer.
 
-//TODO make this dynamic or an array so we can have more farmers.
 pthread_t*  fthreads;      // farmer thread
+static int fstatus[MAX_FARMERS];
 
 inline void millisleep(long millisecs) 
 { // delay for "millisecs" milliseconds
@@ -67,7 +68,8 @@ inline void work(long id)
 
 inline void do_something_else(long id)   
 { // a unit does something else
-  int ms = STANDARD_DELAY;
+  //int ms = STANDARD_DELAY;
+  int ms = 100000;
   millisleep(ms);
 }
 
@@ -77,8 +79,10 @@ inline void farmer_working(long id)
   // will need a semaphore that guards money amount so
   // that multiple threads can change the money without race condition.
   int work_for_min = 60;
+  semWaitB(&ffarm);
+  fstatus[id] = 1;
+  semSignalB(&ffarm);
   while(work_for_min > 0){
-
     semWaitB(&stash);
     money++;
     semSignalB(&stash);
@@ -89,6 +93,10 @@ inline void farmer_working(long id)
     //printf("%d\n",work_for_min);
     work_for_min--;
   }
+  semWaitB(&ffarm);
+  fstatus[id] = 0;
+  semSignalB(&ffarm);
+
 
 }
 
@@ -178,12 +186,16 @@ inline void save (int fileToLoad){
 int main(int argc, char** argv)
 {
 
+	for(int i = 0; i < MAX_FARMERS; i++)
+		fstatus[i] = 0;
+
   printf("\n\n\n\n\n\n\n\n\n\n");
   printf( LINE_START DIVIDER);
   printf( LINE_START LINE_START"WELCOME TO THREAD IDLER!\n");
   printf( LINE_START "\t\tPlease set your terminal to full screen for the best experience.\n");
   // init the semaphores
   semInitB(&stash, 1);
+  semInitB(&ffarm, 1);
 
   fthreads = (pthread_t*) malloc(MAX_FARMERS*sizeof(pthread_t));
 
@@ -217,14 +229,14 @@ int main(int argc, char** argv)
     printf(LINE_START "(2) Hire/Upgrade Menu." LINE_END);
     millisleep(STANDARD_DELAY); 
     // TODO add a command three that shows the status of all units owned.
-    //printf(LINE_START "(3) Status Of Farmers." LINE_END);
-    //millisleep(STANDARD_DELAY); 
+    printf(LINE_START "(3) Status Of Farmers." LINE_END);
+    millisleep(STANDARD_DELAY); 
     // TODO add a How To Play section Command
     printf(LINE_START "(4) How To Play." LINE_END);
     millisleep(STANDARD_DELAY); // added delays for human readability
     // TODO maybe add a reset command?
-    printf(LINE_START "(5) Reset." LINE_END);
-    millisleep(STANDARD_DELAY); // added delays for human readability
+    //printf(LINE_START "(5) Reset." LINE_END);
+    //millisleep(STANDARD_DELAY); // added delays for human readability
     printf(LINE_START "(9) Save Menu." LINE_END);
     millisleep(STANDARD_DELAY);
     printf(LINE_START "(10) Exit the game." LINE_END);
@@ -328,17 +340,25 @@ int main(int argc, char** argv)
 	}
 //*---------------------------- END OF DIRECTIONS MENU --------------------------------*//
 
-//*------------------------------ RESET -----------------------------------------------*//
-     else if (cmd == 5) {
-	semWaitB(&stash);
-	money = 0;
+//*------------------------------ STATUS -----------------------------------------------*//
+    else if (cmd == 3) {
+	printf(LINE_START DIVIDER);
+	printf(LINE_START LINE_START "\tSTATUS\n" );
+	printf(LINE_START DIVIDER);
+	printf("\n");
 	//Look into how to iterate through thread IDs
-	//pthread_kill(&fthreads[?, 0];
-	semSignalB(&stash);
+	for (int i = 0; i < numFarmers; i++){
+		semWaitB(&ffarm);
+		if (fstatus[i] == 1)
+			printf(LINE_START LINE_START "Farmer %d: " ANSI_COLOR_GREEN "Working" ANSI_COLOR_RESET LINE_END, i + 1);
+		else
+			printf(LINE_START LINE_START "Farmer %d: " ANSI_COLOR_RED "Not Working" ANSI_COLOR_RESET LINE_END, i + 1);
+		semSignalB(&ffarm);
+	}
 
 	}
 
-//*----------------------------------- END OF RESET -------------------------------------*//
+//*----------------------------------- END OF STATUS -------------------------------------*//
      else if (cmd == 9) {
       bool inSaveMenu = true;
       while(inSaveMenu){
